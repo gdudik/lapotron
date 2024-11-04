@@ -107,11 +107,23 @@ def blink_high(pin):
     time.sleep(0.15)
     GPIO.output(pin, GPIO.LOW)
 
-def send_TCP(message):
-    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    s.connect(('192.168.1.44', 3636))
-    s.send(message)
-    s.close()
+
+def send_TCP(message, retries=3, delay=2):
+    attempt = 0
+    while attempt < retries:
+        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        try:
+            s.connect(('192.168.1.44', 3636))
+            s.send(message)
+            return
+        except socket.error as e:
+            attempt += 1
+            time.sleep(delay)
+        finally:
+            s.close()
+
+    
+    
 
 try:
     # Add event detection for both pins with debounce
