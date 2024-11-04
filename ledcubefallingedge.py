@@ -118,6 +118,9 @@ def send_TCP(message, retries=3, delay=2):
             return
         except socket.error as e:
             attempt += 1
+            for _ in range(2):
+                          blink_high(ACTION_LIGHT)
+                          time.sleep(.10)
             time.sleep(delay)
         finally:
             s.close()
