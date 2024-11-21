@@ -4,7 +4,22 @@ import json
 import time
 import os
 import socket
+import logging
 
+LOG_FILE = "lapotron.log"  # Replace with your desired log file path
+logging.basicConfig(
+    filename=LOG_FILE,
+    level=logging.INFO,
+    format="%(asctime)s - %(levelname)s - %(message)s"
+)
+
+def log_info(message):
+    logging.info(message)
+    print(message)
+
+def log_error(message):
+    logging.error(message)
+    print(message)
 
 # Define your server IP address and port
 SERVER_IP = '192.168.1.44'
@@ -34,10 +49,10 @@ def is_connected():
         return False
 
 # Wait until the network is up
-print("Waiting for network connection...")
+log_info("Waiting for network connection...")
 while not is_connected():
     time.sleep(1)
-print("Network connection established.")
+log_info("Network connection established.")
 
 # Initialize GPIO
 GPIO.setmode(GPIO.BOARD)
@@ -86,29 +101,31 @@ def send_http_request(pin, command):
     json_data = json.dumps(data)  # Convert data to JSON string
     try:
         response = requests.post(url, headers=headers, data=json_data)
-        print(f"HTTP request sent to {url}, response: {response.status_code}")
+        log_info(f"HTTP request sent to {url}, response: {response.status_code}")
     except requests.RequestException as e:
-        print(f"Request failed: {e}")
+        log_error(f"Request failed: {e}")
 
 def send_pvp_request(url):
     url = url
     try:
-        response = requests.post(url, verify=False)
+        # Make the POST request
+        response = requests.post(url, verify=False)  # `verify=False` is used to skip SSL verification
+        # Check for response status
+        if response.status_code == 200:
+            log_info("Request successful:", response.text)
+        else:
+            log_error(f"Request failed with status code {response.status_code}: {response.text}")
     except requests.RequestException as e:
-        print(e)
+        log_error("An error occurred:", e)
 
 
 def handle_pin21(channel):
     blink_high(ACTION_LIGHT)
-    print("handle_pin21 triggered")
     send_http_request(SERVER_PORT_PIN21, {"action": "activate_grid_cell", "grid": "grid", "cell": [11, 2]})
-    print("Pin 21 pulled LOW")
 
 def handle_pin23(channel):
     blink_high(ACTION_LIGHT)
-    print("handle_pin23 triggered")
     send_http_request(SERVER_PORT_PIN23, {"action": "activate_grid_cell", "grid": "grid", "cell": [11, 1]})
-    print("Pin 23 pulled LOW")
 
 def blink_high(pin):
     GPIO.output(pin, GPIO.HIGH)
@@ -157,13 +174,13 @@ try:
             elif pressed_key == '#':
                 if recording:
                     key_sequence = ''.join(map(str, recorded_keys))
-                    print("Recorded keys:", key_sequence)
+                    log_info("Recorded keys:", key_sequence)
                     recording = False
                     if key_sequence == '9999':
                         for _ in range(5):
                           blink_high(ACTION_LIGHT)
                           time.sleep(.10)
-                        print("Magic sequence detected! Shutting down...")
+                        log_info("Magic sequence detected! Shutting down...")
                         os.system("sudo shutdown -h now")
                     elif key_sequence == '00':
                         send_pvp_request('http://192.168.1.66:54655/api/0/trigger/layer/Cube/playlist/0/cue/cubebg')
@@ -175,6 +192,6 @@ try:
         time.sleep(0.1)
 
 except KeyboardInterrupt:
-    print("Script interrupted by user")
+    log_info("Script interrupted by user")
 finally:
     GPIO.cleanup()  # Ensure GPIO cleanup on exit
