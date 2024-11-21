@@ -6,7 +6,7 @@ import os
 import socket
 import logging
 
-LOG_FILE = "lapotron.log"  # Replace with your desired log file path
+LOG_FILE = "~/lapotron.log"  # Replace with your desired log file path
 logging.basicConfig(
     filename=LOG_FILE,
     level=logging.INFO,
