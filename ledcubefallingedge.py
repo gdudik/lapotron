@@ -90,6 +90,14 @@ def send_http_request(pin, command):
     except requests.RequestException as e:
         print(f"Request failed: {e}")
 
+def send_pvp_request(url):
+    url = url
+    try:
+        response = requests.post(url, verify=False)
+    except requests.RequestException as e:
+        print(e)
+
+
 def handle_pin21(channel):
     blink_high(ACTION_LIGHT)
     print("handle_pin21 triggered")
@@ -157,6 +165,8 @@ try:
                           time.sleep(.10)
                         print("Magic sequence detected! Shutting down...")
                         os.system("sudo shutdown -h now")
+                    elif key_sequence == '00':
+                        send_pvp_request('http://192.168.1.66:54655/api/0/trigger/layer/Cube/playlist/0/cue/cubebg')
                     else: 
                         send_TCP((f'Lap_Count={key_sequence}\n'.encode()))
 
