@@ -6,7 +6,7 @@ import os
 import socket
 import logging
 
-LOG_FILE = os.path.expanduser("~/lapotron.log")  # Replace with your desired log file path
+LOG_FILE = "/home/lapotron/lapotron.log"  # Replace with your desired log file path
 logging.basicConfig(
     filename=LOG_FILE,
     level=logging.INFO,
@@ -112,11 +112,11 @@ def send_pvp_request(url):
         response = requests.post(url, verify=False)  # `verify=False` is used to skip SSL verification
         # Check for response status
         if response.status_code == 200:
-            log_info("Request successful:", response.text)
+            log_info(f"Request successful: {response.text}")
         else:
             log_error(f"Request failed with status code {response.status_code}: {response.text}")
     except requests.RequestException as e:
-        log_error("An error occurred:", e)
+        log_error(f"An error occurred: {e}")
 
 
 def handle_pin21(channel):
@@ -174,18 +174,25 @@ try:
             elif pressed_key == '#':
                 if recording:
                     key_sequence = ''.join(map(str, recorded_keys))
-                    log_info("Recorded keys:", key_sequence)
+                    log_info(f"Recorded keys: {key_sequence}")
                     recording = False
                     if key_sequence == '9999':
                         for _ in range(5):
                           blink_high(ACTION_LIGHT)
                           time.sleep(.10)
-                        log_info("Magic sequence detected! Shutting down...")
+                        log_info("9999--shutting down")
                         os.system("sudo shutdown -h now")
+                    if key_sequence == '9998':
+                        for _ in range(5):
+                          blink_high(ACTION_LIGHT)
+                          time.sleep(.10)
+                        log_info("9998--rebooting")
+                        os.system("sudo reboot now")
                     elif key_sequence == '00':
                         send_pvp_request('http://192.168.1.66:54655/api/0/trigger/layer/Cube/playlist/0/cue/cubebg')
                     else: 
                         send_TCP((f'Lap_Count={key_sequence}\n'.encode()))
+                        send_pvp_request('http://192.168.1.66:54655/api/0/trigger/layer/Cube/playlist/-1/cue/14')
 
             elif recording:
                 recorded_keys.append(pressed_key)
