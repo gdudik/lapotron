@@ -189,10 +189,10 @@ try:
                         log_info("9998--rebooting")
                         os.system("sudo reboot now")
                     elif key_sequence == '00':
-                        send_pvp_request('http://192.168.1.66:54655/api/0/trigger/layer/Cube/playlist/0/cue/cubebg')
+                        send_pvp_request('http://192.168.1.66:54655/api/0/clear/layer/Cube')
                     else: 
                         send_TCP((f'Lap_Count={key_sequence}\n'.encode()))
-                        send_pvp_request('http://192.168.1.66:54655/api/0/trigger/layer/Cube/playlist/-1/cue/14')
+                        send_pvp_request('http://192.168.1.66:54655/api/0/trigger/layer/Cube/playlist/-1/cue/Cube')
 
             elif recording:
                 recorded_keys.append(pressed_key)
